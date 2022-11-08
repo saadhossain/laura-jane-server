@@ -26,6 +26,15 @@ const dbConnect = () => {
         const result = await cursor.limit(3).toArray();
         res.send(result)
     })
+    //API for Adding new Service by user
+    app.post('/services/add', async(req, res)=>{
+        const newService = req.body;
+        const result = await services.insertOne(newService);
+        res.send(result)
+        console.log(result);
+
+    })
+
     //Get All Services from the Database
     app.get('/services', async (req, res) => {
         const query = {};
@@ -42,6 +51,7 @@ const dbConnect = () => {
         res.send(result);
     })
 
+    //All Review Collections
     const allReviews = client.db("lauraJane").collection("reviews");
 
     // Post New Review and store review to the Database
@@ -49,7 +59,6 @@ const dbConnect = () => {
         const newReview = req.body;
         const result = await allReviews.insertOne(newReview);
         res.send(result)
-        console.log(result);
     })
     //Get All Reviews for a single Service
     app.get('/reviews/', async (req, res) => {
@@ -63,7 +72,6 @@ const dbConnect = () => {
         const cursor = allReviews.find(query)
         const result = await cursor.toArray()
         res.send(result)
-        console.log(result);
     })
 
 }
