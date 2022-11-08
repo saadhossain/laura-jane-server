@@ -1,19 +1,23 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT || 5000
-const { MongoClient, ObjectId } = require('mongodb')
+const port = process.env.PORT || 5000;
+//Require dotenv to connect secure info(user, pass, secret key)
+require('dotenv').config()
+//Require mongoclient and other essentials
+const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb')
 //Middle Wares
 const cors = require('cors')
 app.use(cors())
 app.use(express.json())
 
-//setup MongoDB
-const uri = "mongodb://localhost:27017";
-const client = new MongoClient(uri);
+//Setup MongoDB
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 
 //DataBase Connection and Apis
 const dbConnect = () => {
-    const services = client.db("laura-jane").collection("services");
+    const services = client.db("lauraJane").collection("services");
 
     //Get Limited Services from MongoDB
     app.get('/services/limit', async(req, res)=> {
