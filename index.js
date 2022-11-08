@@ -42,6 +42,22 @@ const dbConnect = () => {
         res.send(result);
     })
 
+    //Get All Reviews for a single Service
+    const reviews = client.db("lauraJane").collection("reviews");
+    app.get('/reviews/', async(req, res)=> {
+        const requestedId = req.query.serviceId;
+        let query = {}
+        if(requestedId){
+            query = {
+                serviceId: requestedId
+            }
+        }
+        const cursor = reviews.find(query)
+        const result = await cursor.toArray()
+        res.send(result)
+        console.log(result);
+    })
+
 }
 dbConnect()
 
