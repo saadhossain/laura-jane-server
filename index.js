@@ -20,39 +20,47 @@ const dbConnect = () => {
     const services = client.db("lauraJane").collection("services");
 
     //Get Limited Services from MongoDB
-    app.get('/services/limit', async(req, res)=> {
+    app.get('/services/limit', async (req, res) => {
         const query = {};
         const cursor = services.find(query)
         const result = await cursor.limit(3).toArray();
         res.send(result)
     })
     //Get All Services from the Database
-    app.get('/services', async(req, res)=> {
+    app.get('/services', async (req, res) => {
         const query = {};
         const cursor = services.find(query)
         const result = await cursor.toArray();
         res.send(result)
     })
     //Get Single Service Data from the database
-    app.get('/services/:id', async(req, res)=> {
+    app.get('/services/:id', async (req, res) => {
         const id = req.params.id;
-        const query = {_id: ObjectId(id)}
+        const query = { _id: ObjectId(id) }
         const cursor = services.find(query);
         const result = await cursor.toArray()
         res.send(result);
     })
 
+    const allReviews = client.db("lauraJane").collection("reviews");
+
+    // Post New Review and store review to the Database
+    app.post('/reviews/write', async(req, res)=> {
+        const newReview = req.body;
+        const result = await allReviews.insertOne(newReview);
+        res.send(result)
+        console.log(result);
+    })
     //Get All Reviews for a single Service
-    const reviews = client.db("lauraJane").collection("reviews");
-    app.get('/reviews/', async(req, res)=> {
+    app.get('/reviews/', async (req, res) => {
         const requestedId = req.query.serviceId;
         let query = {}
-        if(requestedId){
+        if (requestedId) {
             query = {
                 serviceId: requestedId
             }
         }
-        const cursor = reviews.find(query)
+        const cursor = allReviews.find(query)
         const result = await cursor.toArray()
         res.send(result)
         console.log(result);
@@ -62,11 +70,11 @@ const dbConnect = () => {
 dbConnect()
 
 //Server Default/root route
-app.get('/', (req, res)=> {
+app.get('/', (req, res) => {
     res.send('Laura Jane Server is Running...')
 })
 
 //Add a listener
-app.listen(port, ()=> {
-    console.log('Server Running On port: ',port);
+app.listen(port, () => {
+    console.log('Server Running On port: ', port);
 })
