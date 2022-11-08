@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 //Middle Wares
 const cors = require('cors')
 app.use(cors())
@@ -21,6 +21,14 @@ const dbConnect = () => {
         const cursor = services.find(query)
         const result = await cursor.limit(3).toArray();
         res.send(result)
+    })
+    //Get Single Service Data from the database
+    app.get('/services/:id', async(req, res)=> {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)}
+        const cursor = services.find(query);
+        const result = await cursor.toArray()
+        res.send(result);
     })
 
 }
