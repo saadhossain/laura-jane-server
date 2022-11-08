@@ -35,9 +35,16 @@ const dbConnect = () => {
 
     })
 
-    //Get All Services from the Database
+    //Get All Services from the Database and Get All Services added by a specific user
     app.get('/services', async (req, res) => {
-        const query = {};
+        let query = {};
+        const email = req.query.email;
+        console.log(email);
+        if(email){
+            query = {
+                addedBy: email
+            }
+        }
         const cursor = services.find(query)
         const result = await cursor.toArray();
         res.send(result)
@@ -61,12 +68,28 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get All Reviews for a single Service
-    app.get('/reviews/', async (req, res) => {
+    app.get('/reviews', async (req, res) => {
         const requestedId = req.query.serviceId;
+        const email = req.query.email;
         let query = {}
         if (requestedId) {
             query = {
-                serviceId: requestedId
+                serviceId: requestedId,
+                // email: email
+            }
+        }
+        const cursor = allReviews.find(query)
+        const result = await cursor.toArray()
+        res.send(result)
+    })
+    //Get all the Service added by a Specific user
+    app.get('/reviews', async(req, res)=> {
+        let query = {};
+        const email = req.query.email;
+        console.log(email);
+        if(email){
+            query = {
+                email: email
             }
         }
         const cursor = allReviews.find(query)
