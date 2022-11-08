@@ -15,11 +15,18 @@ const client = new MongoClient(uri);
 const dbConnect = () => {
     const services = client.db("laura-jane").collection("services");
 
-    //Get Services from MongoDB
-    app.get('/services', async(req, res)=> {
+    //Get Limited Services from MongoDB
+    app.get('/services/limit', async(req, res)=> {
         const query = {};
         const cursor = services.find(query)
         const result = await cursor.limit(3).toArray();
+        res.send(result)
+    })
+    //Get All Services from the Database
+    app.get('/services', async(req, res)=> {
+        const query = {};
+        const cursor = services.find(query)
+        const result = await cursor.toArray();
         res.send(result)
     })
     //Get Single Service Data from the database
