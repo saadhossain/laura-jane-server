@@ -59,8 +59,18 @@ const dbConnect = () => {
 
     })
 
-    //Get All Services from the Database and Get All Services added by a specific user
-    app.get('/services', verifiyToken, async (req, res) => {
+    //Get All Services from the Database and implement Pagination
+    app.get('/services', async (req, res) => {
+        let query = {};
+        const servicePerPage = parseInt(req.query.servicePerPage);
+        const currentPage = parseInt(req.query.currentPage);
+        const cursor = services.find(query)
+        const result = await cursor.skip(currentPage * servicePerPage).limit(servicePerPage).toArray();
+        const count = await services.estimatedDocumentCount()
+        res.send({count, result})
+    })
+    //Get All Services added by a specific user
+    app.get('/services/user', verifiyToken, async (req, res) => {
         let query = {};
         const decoded = req.decoded;
         const email = req.query.email;
