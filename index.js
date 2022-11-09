@@ -152,7 +152,7 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get all the Reviews added by a Specific user
-    app.get('/reviews', verifiyToken, async (req, res) => {
+    app.get('/reviews/user', verifiyToken, async (req, res) => {
         let query = {};
         const decoded = req.decoded;
         const email = req.query.email;
