@@ -85,6 +85,31 @@ const dbConnect = () => {
         res.send(result);
     })
 
+    //Update Service
+    app.put('/services/edit/:id', async(req, res)=> {
+        const id = req.params.id;
+        const service = req.body;
+        const filter = {_id: ObjectId(id)}
+        const options = {upsert: true}
+        const updatedService = {
+            $set : {
+                name: service.name,
+                description: service.description,
+                serviceCost: service.serviceCost,
+                completedCase: service.completedCase,
+                rating:{
+                    total:service.rating.total,
+                    rate: service.rating.rate
+                },
+                img: service.img,
+                addedBy: service.addedBy
+            }
+        }
+        const result = await services.updateOne(filter, updatedService, options);
+        res.send(result)
+    })
+
+
     //All Review Collections
     const allReviews = client.db("lauraJane").collection("reviews");
 
@@ -138,17 +163,17 @@ const dbConnect = () => {
     //Update Review
     app.put('/reviews/update/:id', async (req, res) => {
         const id = req.params.id
-        const requestedUpdate = req.body;
+        const review = req.body;
         const options = { upsert: true }
         const filter = { _id: ObjectId(id) }
         const updatedReview = {
             $set: {
-                serviceId : requestedUpdate.serviceId,
-                email : requestedUpdate.email,
-                reviewerName : requestedUpdate.reviewerName,
-                rating : requestedUpdate.rating,
-                reviewerImg : requestedUpdate.reviewerImg,
-                description : requestedUpdate.description,
+                serviceId : review.serviceId,
+                email : review.email,
+                reviewerName : review.reviewerName,
+                rating : review.rating,
+                reviewerImg : review.reviewerImg,
+                description : review.description,
             }
         }
         const result = await allReviews.updateOne(filter, updatedReview, options)
