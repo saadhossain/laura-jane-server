@@ -108,7 +108,13 @@ const dbConnect = () => {
         const result = await services.updateOne(filter, updatedService, options);
         res.send(result)
     })
-
+    //Delete a Service added by User
+    app.delete('/services/delete/:id', async(req, res)=> {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)}
+        const result = await services.deleteOne(query)
+        res.send(result)
+    })
 
     //All Review Collections
     const allReviews = client.db("lauraJane").collection("reviews");
@@ -133,7 +139,7 @@ const dbConnect = () => {
         const result = await cursor.toArray()
         res.send(result)
     })
-    //Get all the Service added by a Specific user
+    //Get all the Reviews added by a Specific user
     app.get('/reviews', verifiyToken, async (req, res) => {
         let query = {};
         const decoded = req.decoded;
