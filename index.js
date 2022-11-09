@@ -17,23 +17,22 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@firstmo
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 //Genarate Access token for the user
-app.post('/getaccesstoken', async(req, res)=> {
+app.post('/getaccesstoken', async (req, res) => {
     const user = req.body;
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'})
-    res.send({token})
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+    res.send({ token })
 })
 
 //Genarate a verification function for JWT
 const verifiyToken = (req, res, next) => {
     const authToken = req.headers.authorization;
-    console.log(authToken);
-    if(!authToken){
-        return res.status(401).send({message: 'unauthorized access'})
+    if (!authToken) {
+        return res.status(401).send({ message: 'unauthorized access' })
     }
     const token = authToken.split(' ')[1]
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=> {
-        if(err){
-            return res.status(401).send({message: 'unauthorized access'})
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' })
         }
         req.decoded = decoded;
         next()
@@ -53,11 +52,10 @@ const dbConnect = () => {
         res.send(result)
     })
     //API for Adding new Service by user
-    app.post('/services/add', async(req, res)=>{
+    app.post('/services/add', async (req, res) => {
         const newService = req.body;
         const result = await services.insertOne(newService);
         res.send(result)
-        console.log(result);
 
     })
 
@@ -66,11 +64,10 @@ const dbConnect = () => {
         let query = {};
         const decoded = req.decoded;
         const email = req.query.email;
-        if(decoded.email !== email){
-            return res.status(403).send({message: 'Forbidden! Data is unacceessible for you'})
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Forbidden! Data is unacceessible for you' })
         }
-        console.log(email);
-        if(email){
+        if (email) {
             query = {
                 addedBy: email
             }
@@ -92,7 +89,7 @@ const dbConnect = () => {
     const allReviews = client.db("lauraJane").collection("reviews");
 
     // Post New Review and store review to the Database
-    app.post('/reviews/write', async(req, res)=> {
+    app.post('/reviews/write', async (req, res) => {
         const newReview = req.body;
         const result = await allReviews.insertOne(newReview);
         res.send(result)
@@ -100,7 +97,6 @@ const dbConnect = () => {
     //Get All Reviews for a single Service
     app.get('/reviews', async (req, res) => {
         const requestedId = req.query.serviceId;
-        const email = req.query.email;
         let query = {}
         if (requestedId) {
             query = {
@@ -113,21 +109,49 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get all the Service added by a Specific user
-    app.get('/reviews', verifiyToken, async(req, res)=> {
+    app.get('/reviews', verifiyToken, async (req, res) => {
         let query = {};
         const decoded = req.decoded;
         const email = req.query.email;
-        if(decoded.email !== email){
-            return res.status(403).send({message: 'Forbidden! Data is unacceessible for you'})
+        if (decoded.email !== email) {
+            return res.status(403).send({ message: 'Forbidden! Data is unacceessible for you' })
         }
-        console.log(email);
-        if(email){
+        if (email) {
             query = {
                 email: email
             }
         }
         const cursor = allReviews.find(query)
         const result = await cursor.toArray()
+        res.send(result)
+    })
+
+    //Get a Single Review
+    app.get('/reviews/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) }
+        const cursor = allReviews.find(query)
+        const review = await cursor.toArray()
+        res.send(review)
+    })
+
+    //Update Review
+    app.put('/reviews/update/:id', async (req, res) => {
+        const id = req.params.id
+        const requestedUpdate = req.body;
+        const options = { upsert: true }
+        const filter = { _id: ObjectId(id) }
+        const updatedReview = {
+            $set: {
+                serviceId : requestedUpdate.serviceId,
+                email : requestedUpdate.email,
+                reviewerName : requestedUpdate.reviewerName,
+                rating : requestedUpdate.rating,
+                reviewerImg : requestedUpdate.reviewerImg,
+                description : requestedUpdate.description,
+            }
+        }
+        const result = await allReviews.updateOne(filter, updatedReview, options)
         res.send(result)
     })
 
