@@ -47,7 +47,8 @@ const dbConnect = () => {
     //Get Limited Services from MongoDB
     app.get('/services/limit', async (req, res) => {
         const query = {};
-        const cursor = services.find(query)
+        //Services Sorting on desending order, latest added item will show first
+        const cursor = services.find(query).sort({addedOn: -1})
         const result = await cursor.limit(3).toArray();
         res.send(result)
     })
@@ -82,7 +83,7 @@ const dbConnect = () => {
                 addedBy: email
             }
         }
-        const cursor = services.find(query)
+        const cursor = services.find(query).sort({addedOn: -1})
         const result = await cursor.toArray();
         res.send(result)
     })
@@ -145,7 +146,8 @@ const dbConnect = () => {
                 // email: email
             }
         }
-        const cursor = allReviews.find(query)
+        //Latest added review will show first
+        const cursor = allReviews.find(query).sort({addedOn: -1})
         const result = await cursor.toArray()
         res.send(result)
     })
