@@ -3,6 +3,8 @@ const app = express()
 const port = process.env.PORT || 5000;
 //Require dotenv to connect secure info(user, pass, secret key)
 require('dotenv').config()
+//Require JWT to genaratinga and verifiying access token
+const jwt = require('jsonwebtoken');
 //Require mongoclient and other essentials
 const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb')
 //Middle Wares
@@ -14,6 +16,30 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@firstmongodb.yjij5fj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+//Genarate Access token for the user
+app.post('/getaccesstoken', async(req, res)=> {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1d'})
+    res.send({token})
+})
+
+//Genarate a verification function for JWT
+const verifiyToken = (req, res, next) => {
+    const authToken = req.headers.authorization;
+    console.log(authToken);
+    if(!authToken){
+        return res.status(401).send({message: 'unauthorized access'})
+    }
+    const token = authToken.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=> {
+        if(err){
+            return res.status(401).send({message: 'unauthorized access'})
+        }
+        req.decoded = decoded;
+        next()
+    })
+
+}
 
 //DataBase Connection and Apis
 const dbConnect = () => {
@@ -36,9 +62,13 @@ const dbConnect = () => {
     })
 
     //Get All Services from the Database and Get All Services added by a specific user
-    app.get('/services', async (req, res) => {
+    app.get('/services', verifiyToken, async (req, res) => {
         let query = {};
+        const decoded = req.decoded;
         const email = req.query.email;
+        if(decoded.email !== email){
+            return res.status(403).send({message: 'Forbidden! Data is unacceessible for you'})
+        }
         console.log(email);
         if(email){
             query = {
@@ -83,9 +113,13 @@ const dbConnect = () => {
         res.send(result)
     })
     //Get all the Service added by a Specific user
-    app.get('/reviews', async(req, res)=> {
+    app.get('/reviews', verifiyToken, async(req, res)=> {
         let query = {};
+        const decoded = req.decoded;
         const email = req.query.email;
+        if(decoded.email !== email){
+            return res.status(403).send({message: 'Forbidden! Data is unacceessible for you'})
+        }
         console.log(email);
         if(email){
             query = {
