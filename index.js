@@ -205,6 +205,30 @@ const dbConnect = () => {
         res.send(result)
     })
 
+    //APIS for Blogs/Articles
+    const allBlogs = client.db("lauraJane").collection("blogs");
+    //Post a Article by the User....
+    app.post('/blog/add', async(req, res)=> {
+        const blog = req.body;
+        const result = await allBlogs.insertOne(blog)
+        res.send(result)
+    })
+    //Get All Blogs from the database
+    app.get('/blogs', async(req, res)=> {
+        const query = {}
+        const cursor = allBlogs.find(query)
+        const blogs = await cursor.toArray()
+        res.send(blogs)
+    })
+    //Get a Single Blog
+    app.get('/blog/:id', async(req, res)=> {
+        const id = req.params.id;
+        const query = {_id: ObjectId(id)};
+        const cursor = allBlogs.find(query)
+        const blog = await cursor.toArray()
+        res.send(blog)
+    })
+
 }
 dbConnect()
 
